@@ -1,1 +1,8 @@
 # Quince
+SAD PROJECT BY ALLEN AUDREY KISH LEYBLE
+
+USERS AND PASSWORD:
+
+Admin
+USER: admin
+Password: admin
