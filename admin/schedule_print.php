@@ -38,7 +38,7 @@
     $pdf->AddPage();  
     $content = '';  
     $content .= '
-      	<h2 align="center">TechSoft IT Solutions</h2>
+      	<h2 align="center">JVJ Interior Supplies Trading Company</h2>
       	<h4 align="center">Employee Schedule</h4>
       	<table border="1" cellspacing="0" cellpadding="3">  
            <tr>  
