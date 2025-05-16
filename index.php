@@ -25,6 +25,12 @@
     			<div class="col-xs-4">
           			<button type="submit" class="btn btn-primary btn-block btn-flat" name="signin"><i class="fa fa-sign-in"></i> Sign In</button>
         		</div>
+            <div class="col-xs-4">
+  <button type="button" class="btn btn-secondary btn-block btn-flat" id="employeeLoginBtn">
+    <i class="fa fa-user"></i> Employee Login
+  </button>
+</div>
+
       		</div>
     	</form>
   	</div>
@@ -71,6 +77,10 @@ $(function() {
       }
     });
   });
+  $('#employeeLoginBtn').click(function() {
+  window.location.href = 'employee_login.php';
+});
+
     
 });
 </script>

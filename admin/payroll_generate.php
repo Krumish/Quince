@@ -4,7 +4,13 @@
 	function generateRow($from, $to, $conn, $deduction){
 		$contents = '';
 	 	
-		$sql = "SELECT *, sum(num_hr) AS total_hr, attendance.employee_id AS empid FROM attendance LEFT JOIN employees ON employees.id=attendance.employee_id LEFT JOIN position ON position.id=employees.position_id WHERE date BETWEEN '$from' AND '$to' GROUP BY attendance.employee_id ORDER BY employees.lastname ASC, employees.firstname ASC";
+	$sql = "SELECT *, SUM(num_hr) AS total_hr, attendance.employee_id AS empid, employees.employee_id AS employee 
+        FROM attendance 
+        LEFT JOIN employees ON employees.id = attendance.employee_id 
+        LEFT JOIN position ON position.id = employees.position_id 
+        WHERE date BETWEEN '$from' AND '$to' 
+        GROUP BY attendance.employee_id 
+        ORDER BY employees.lastname ASC, employees.firstname ASC";
 
 		$query = $conn->query($sql);
 		$total = 0;
@@ -24,7 +30,7 @@
 			$total += $net;
 			$contents .= '
 			<tr>
-				<td>'.$row['lastname'].', '.$row['firstname'].'</td>
+				<td>'.$row['lastname'].', '.$row['firstname'].' '.$row['middlename'].'</td>
 				<td>'.$row['employee_id'].'</td>
 				<td align="right">'.number_format($net, 2).'</td>
 			</tr>
@@ -54,34 +60,77 @@
 	$to_title = date('M d, Y', strtotime($ex[1]));
 
 	require_once('../tcpdf/tcpdf.php');  
-    $pdf = new TCPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);  
-    $pdf->SetCreator(PDF_CREATOR);  
-    $pdf->SetTitle('Payroll: '.$from_title.' - '.$to_title);  
-    $pdf->SetHeaderData('', '', PDF_HEADER_TITLE, PDF_HEADER_STRING);  
-    $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));  
-    $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));  
-    $pdf->SetDefaultMonospacedFont('helvetica');  
-    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);  
-    $pdf->SetMargins(PDF_MARGIN_LEFT, '10', PDF_MARGIN_RIGHT);  
-    $pdf->setPrintHeader(false);  
-    $pdf->setPrintFooter(false);  
-    $pdf->SetAutoPageBreak(TRUE, 10);  
-    $pdf->SetFont('helvetica', '', 11);  
-    $pdf->AddPage();  
-    $content = '';  
-    $content .= '
-      	<h2 align="center">JVJ Interior Supplies Trading Company</h2>
-      	<h4 align="center">'.$from_title." - ".$to_title.'</h4>
-      	<table border="1" cellspacing="0" cellpadding="3">  
-           <tr>  
-           		<th width="40%" align="center"><b>Employee Name</b></th>
-                <th width="30%" align="center"><b>Employee ID</b></th>
-				<th width="30%" align="center"><b>Net Pay</b></th> 
-           </tr>  
-      ';  
-    $content .= generateRow($from, $to, $conn, $deduction);  
-    $content .= '</table>';  
-    $pdf->writeHTML($content);  
-    $pdf->Output('payroll.pdf', 'I');
+$pdf = new TCPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);  
+$pdf->SetCreator(PDF_CREATOR);  
+$pdf->SetTitle('Payroll: '.$from_title.' - '.$to_title);  
+
+// Set margins
+$pdf->SetMargins(15, 20, 15);
+$pdf->SetHeaderMargin(10);
+$pdf->SetFooterMargin(10);
+$pdf->SetAutoPageBreak(TRUE, 15);
+$pdf->SetFont('helvetica', '', 11);  
+
+// Add a page
+$pdf->AddPage();  
+
+// Add logo (adjust path and dimensions as needed)
+$logoPath = '../images/company_logo.jpg'; // change to your actual path
+if (file_exists($logoPath)) {
+    $pdf->Image($logoPath, 15, 3, 35, 35); // X, Y, Width, Height
+}
+
+// Extract months and year for dynamic payroll title
+$fromMonth = date('F', strtotime($from));  // e.g., April
+$toMonth = date('F', strtotime($to));      // e.g., May
+$year = date('Y', strtotime($to));         // Final year
+
+if ($fromMonth === $toMonth) {
+    $monthRange = "$toMonth $year";
+} else {
+    $monthRange = "$fromMonth to $toMonth, $year";
+}
+
+$summaryTitle = "Payroll Summary of the Month $monthRange";
+// Header content
+$pdf->SetY(10); // set vertical position for text
+$content = '
+	<style>
+		.table-header {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+	</style>
+	<table width="100%" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="30%"></td>
+			<td width="70%" align="center">
+				<h2 style="margin:0;">JVJ Interior Supplies Trading Company</h2>
+				<small>'.$from_title.' - '.$to_title.'</small>
+			</td>
+		</tr>
+	</table>
+	<br><br><br>
+
+	<h4 align="center">'.$summaryTitle.'</h4>
+	<br>
+
+	<table border="1" cellspacing="0" cellpadding="4">
+		<tr style="background-color:#f2f2f2;">
+			<th width="40%" align="center"><b>Employee Name</b></th>
+			<th width="30%" align="center"><b>Employee ID</b></th>
+			<th width="30%" align="center"><b>Net Pay</b></th> 
+		</tr>
+';
+
+
+$content .= generateRow($from, $to, $conn, $deduction);  
+$content .= '</table>';
+
+
+
+// Output the PDF
+$pdf->writeHTML($content, true, false, true, false, '');
+$pdf->Output('payroll.pdf', 'I');
 
 ?>

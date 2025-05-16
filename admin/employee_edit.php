@@ -1,29 +1,48 @@
 <?php
-	include 'includes/session.php';
+include 'includes/session.php';
 
-	if(isset($_POST['edit'])){
-		$empid = $_POST['id'];
-		$firstname = $_POST['firstname'];
-		$lastname = $_POST['lastname'];
-		$address = $_POST['address'];
-		$birthdate = $_POST['birthdate'];
-		$contact = $_POST['contact'];
-		$gender = $_POST['gender'];
-		$position = $_POST['position'];
-		$schedule = $_POST['schedule'];
-		
-		$sql = "UPDATE employees SET firstname = '$firstname', lastname = '$lastname', address = '$address', birthdate = '$birthdate', contact_info = '$contact', gender = '$gender', position_id = '$position', schedule_id = '$schedule' WHERE id = '$empid'";
-		if($conn->query($sql)){
-			$_SESSION['success'] = 'Employee updated successfully';
-		}
-		else{
-			$_SESSION['error'] = $conn->error;
-		}
+if (isset($_POST['edit'])) {
+    $empid = $_POST['id']; // This is your employee ID
+    $firstname = $_POST['firstname'];
+    $middlename = $_POST['middlename'];
+    $lastname = $_POST['lastname'];
+    $address = $_POST['address'];
+    $birthdate = $_POST['birthdate'];
+    $contact = $_POST['contact'];
+    $gender = $_POST['gender'];
+    $position = $_POST['position'];
+    $schedule = $_POST['schedule'];
 
-	}
-	else{
-		$_SESSION['error'] = 'Select employee to edit first';
-	}
+    if (!empty($_POST['password'])) {
+        $hashed_password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $sql = "UPDATE employees SET 
+            firstname = '$firstname', 
+            middlename = '$middlename',
+            lastname = '$lastname', 
+            password = '$hashed_password' 
+            WHERE id = '$empid'";
+    } else {
+        $sql = "UPDATE employees SET 
+            firstname = '$firstname', 
+            middlename = '$middlename',
+            lastname = '$lastname', 
+            address = '$address', 
+            birthdate = '$birthdate', 
+            contact_info = '$contact', 
+            gender = '$gender', 
+            position_id = '$position', 
+            schedule_id = '$schedule' 
+            WHERE id = '$empid'";
+    }
 
-	header('location: employee.php');
+    if ($conn->query($sql)) {
+        $_SESSION['success'] = 'Employee updated successfully';
+    } else {
+        $_SESSION['error'] = $conn->error;
+    }
+} else {
+    $_SESSION['error'] = 'Select employee to edit first';
+}
+
+header('location: employee.php');
 ?>

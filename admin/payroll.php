@@ -66,22 +66,21 @@
             </div>
             <div class="box-body">
               <table id="example1" class="table table-bordered">
-                <thead>
-                  <th>Employee Name</th>
-                  <th>Employee ID</th>
-                  <th>Gross</th>
-                  <th>Deductions</th>
-                  <th>Cash Advance</th>
-                  <th>Net Pay</th>
-                </thead>
+               <thead>
+  <th>Employee Name</th>
+  <th>Employee ID</th>
+  <th>Gross</th>
+  <th>Deductions</th>
+  <th>Tax</th>
+  <th>Cash Advance</th>
+  <th>Net Pay</th>
+</thead>
                 <tbody>
                   <?php
                     $sql = "SELECT *, SUM(amount) as total_amount FROM deductions";
                     $query = $conn->query($sql);
                     $drow = $query->fetch_assoc();
                     $deduction = $drow['total_amount'];
-  
-                    
                     $to = date('Y-m-d');
                     $from = date('Y-m-d', strtotime('-30 day', strtotime($to)));
 
@@ -92,9 +91,30 @@
                       $to = date('Y-m-d', strtotime($ex[1]));
                     }
 
-                    $sql = "SELECT *, SUM(num_hr) AS total_hr, attendance.employee_id AS empid FROM attendance LEFT JOIN employees ON employees.id=attendance.employee_id LEFT JOIN position ON position.id=employees.position_id WHERE date BETWEEN '$from' AND '$to' GROUP BY attendance.employee_id ORDER BY employees.lastname ASC, employees.firstname ASC";
-
+$sql = "SELECT attendance.*, employees.firstname, employees.middlename, employees.lastname, employees.employee_id, position.rate, position.description, SUM(num_hr) AS total_hr, attendance.employee_id AS empid 
+FROM attendance 
+LEFT JOIN employees ON employees.id = attendance.employee_id 
+LEFT JOIN position ON position.id = employees.position_id 
+WHERE date BETWEEN '$from' AND '$to' 
+GROUP BY attendance.employee_id 
+ORDER BY employees.lastname ASC, employees.firstname ASC";
                     $query = $conn->query($sql);
+                    function computePhilippinesTax($monthly_salary) {
+    if ($monthly_salary <= 20833) {
+        return 0;
+    } elseif ($monthly_salary <= 33332) {
+        return ($monthly_salary - 20833) * 0.20;
+    } elseif ($monthly_salary <= 66666) {
+        return 2500 + ($monthly_salary - 33332) * 0.25;
+    } elseif ($monthly_salary <= 166666) {
+        return 10833 + ($monthly_salary - 66666) * 0.30;
+    } elseif ($monthly_salary <= 666666) {
+        return 40833 + ($monthly_salary - 166666) * 0.32;
+    } else {
+        return 200833 + ($monthly_salary - 666666) * 0.35;
+    }
+}
+
                     $total = 0;
                     while($row = $query->fetch_assoc()){
                       $empid = $row['empid'];
@@ -105,20 +125,32 @@
                       $carow = $caquery->fetch_assoc();
                       $cashadvance = $carow['cashamount'];
 
-                      $gross = $row['rate'] * $row['total_hr'];
-                      $total_deduction = $deduction + $cashadvance;
-                      $net = $gross - $total_deduction;
+                   $gross = $row['rate'] * $row['total_hr'];
 
-                      echo "
-                        <tr>
-                          <td>".$row['lastname'].", ".$row['firstname']."</td>
-                          <td>".$row['employee_id']."</td>
-                          <td>".number_format($gross, 2)."</td>
-                          <td>".number_format($deduction, 2)."</td>
-                          <td>".number_format($cashadvance, 2)."</td>
-                          <td>".number_format($net, 2)."</td>
-                        </tr>
-                      ";
+// Approximate monthly salary (22 working days × 8 hours)
+$monthly_salary = $row['rate'] * 22 * 8;
+
+// Calculate tax based on TRAIN law
+$tax = computePhilippinesTax($monthly_salary);
+
+// Total deduction includes fixed deduction, cash advance, and tax
+$total_deduction = $deduction + $cashadvance + $tax;
+
+// Net pay
+$net = $gross - $total_deduction;
+
+echo "
+  <tr>
+    <td>".$row['lastname'].", ".$row['firstname']." ".$row['middlename']."</td>
+    <td>".$row['employee_id']."</td>
+    <td>".number_format($gross, 2)."</td>
+    <td>".number_format($deduction, 2)."</td>
+    <td>".number_format($tax, 2)."</td>
+    <td>".number_format($cashadvance, 2)."</td>
+    <td>".number_format($net, 2)."</td>
+  </tr>
+";
+
                     }
 
                   ?>

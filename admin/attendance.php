@@ -70,7 +70,7 @@
                           <td class='hidden'></td>
                           <td>".date('M d, Y', strtotime($row['date']))."</td>
                           <td>".$row['empid']."</td>
-                          <td>".$row['firstname'].' '.$row['lastname']."</td>
+                      <td>".$row['firstname'].(!empty($row['middlename']) ? ' '.$row['middlename'] : '').' '.$row['lastname']."</td>
                           <td>".date('h:i A', strtotime($row['time_in'])).$status."</td>
                           <td>".date('h:i A', strtotime($row['time_out']))."</td>
                           <td>
@@ -123,9 +123,9 @@ function getRow(id){
       $('#edit_time_in').val(response.time_in);
       $('#edit_time_out').val(response.time_out);
       $('#attid').val(response.attid);
-      $('#employee_name').html(response.firstname+' '+response.lastname);
+      $('#employee_name').html(response.firstname + ' ' + (response.middlename ? response.middlename + ' ' : '') + response.lastname);
       $('#del_attid').val(response.attid);
-      $('#del_employee_name').html(response.firstname+' '+response.lastname);
+      $('#del_employee_name').html(response.firstname + ' ' + (response.middlename ? response.middlename + ' ' : '') + response.lastname);
     }
   });
 }

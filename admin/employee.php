@@ -69,7 +69,7 @@
                         <tr>
                           <td><?php echo $row['employee_id']; ?></td>
                           <td><img src="<?php echo (!empty($row['photo']))? '../images/'.$row['photo']:'../images/profile.jpg'; ?>" width="30px" height="30px"> <a href="#edit_photo" data-toggle="modal" class="pull-right photo" data-id="<?php echo $row['empid']; ?>"><span class="fa fa-edit"></span></a></td>
-                          <td><?php echo $row['firstname'].' '.$row['lastname']; ?></td>
+                         <td><?php echo $row['firstname']. (!empty($row['middlename']) ? ' '.$row['middlename'] : ''). ' '.$row['lastname'];?></td>
                           <td><?php echo $row['description']; ?></td>
                           <td><?php echo date('h:i A', strtotime($row['time_in'])).' - '.date('h:i A', strtotime($row['time_out'])); ?></td>
                           <td><?php echo date('M d, Y', strtotime($row['created_on'])) ?></td>
@@ -127,10 +127,20 @@ function getRow(id){
     success: function(response){
       $('.empid').val(response.empid);
       $('.employee_id').html(response.employee_id);
-      $('.del_employee_name').html(response.firstname+' '+response.lastname);
-      $('#employee_name').html(response.firstname+' '+response.lastname);
+
+      // Show full name with middlename (only if it's not empty)
+      const fullName = response.firstname + 
+                       (response.middlename ? ' ' + response.middlename : '') + 
+                       ' ' + response.lastname;
+
+      $('.del_employee_name').html(fullName);
+      $('#employee_name').html(fullName);
+
+      // Add this if you have a field for editing middlename
       $('#edit_firstname').val(response.firstname);
+      $('#edit_middlename').val(response.middlename); // <== ADD THIS LINE if applicable
       $('#edit_lastname').val(response.lastname);
+
       $('#edit_address').val(response.address);
       $('#datepicker_edit').val(response.birthdate);
       $('#edit_contact').val(response.contact_info);
