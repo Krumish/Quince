@@ -1,8 +1,12 @@
-<?php session_start(); 
-  if(isset($_SESSION['employee_id'])){
-    header('location:employee_home.php');
+<?php 
+session_start();
+
+include 'admin/includes/conn.php';
+
+if (isset($_SESSION['employee_id']) && isset($_SESSION['id'])) {
+    header('Location: employee_dashboard.php');
     exit();
-  }
+}
 ?>
 
 
@@ -17,15 +21,15 @@
     <p class="login-box-msg">Sign in to start your session</p>
 
     <?php
-  if (isset($_SESSION['error'])) {
-      echo "<div class='alert alert-danger text-center'>" . $_SESSION['error'] . "</div>";
-      unset($_SESSION['error']);
-  }
+ if (isset($_SESSION['login_error'])) {
+    echo "<div class='alert alert-danger text-center'>" . $_SESSION['login_error'] . "</div>";
+    unset($_SESSION['login_error']);
+}
   ?>
 
     <form action="employee_login_process.php" method="POST">
       <div class="form-group has-feedback">
-        <input type="text" class="form-control" name="username" placeholder="Username" required>
+<input type="text" class="form-control" name="employee_id" placeholder="Employee ID" required>
         <span class="glyphicon glyphicon-user form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">

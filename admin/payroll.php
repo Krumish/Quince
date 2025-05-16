@@ -124,9 +124,17 @@ ORDER BY employees.lastname ASC, employees.firstname ASC";
                       $caquery = $conn->query($casql);
                       $carow = $caquery->fetch_assoc();
                       $cashadvance = $carow['cashamount'];
+                      
+                  $otsql = "SELECT SUM(hours * rate) AS total_overtime 
+          FROM overtime 
+          WHERE employee_id = '$empid' 
+          AND date_overtime BETWEEN '$from' AND '$to'";
+$otquery = $conn->query($otsql);
+$otrow = $otquery->fetch_assoc();
+$overtime_pay = $otrow['total_overtime'] ? $otrow['total_overtime'] : 0;
 
-                   $gross = $row['rate'] * $row['total_hr'];
-
+// Add overtime to gross salary
+$gross = ($row['rate'] * $row['total_hr']) + $overtime_pay;
 // Approximate monthly salary (22 working days × 8 hours)
 $monthly_salary = $row['rate'] * 22 * 8;
 
